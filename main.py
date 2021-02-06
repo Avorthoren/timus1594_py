@@ -1,15 +1,10 @@
 from time import time
-from random import randint
 from typing import Union, List
 
-from scipy.sparse.linalg import splu
-from scipy.sparse import csc_matrix
+from complex_modulo import factory
 
-from complex_modulo import ComplexMod
-from rat_complex import RatComplex
-
-ElementT = Union[type(ComplexMod), type(RatComplex)]
-MatrixT = Union[List[List[ComplexMod]], List[List[RatComplex]]]
+ComplexMod = factory(7)
+MatrixT = List[List[ComplexMod]]
 
 
 def showMatrix(matrix: MatrixT) -> None:
@@ -18,7 +13,7 @@ def showMatrix(matrix: MatrixT) -> None:
 	print()
 
 
-def createMatrix(m: int, n: int, type_: ElementT) -> MatrixT:
+def createMatrix(m: int, n: int) -> MatrixT:
 	"""
 	Mark all cells and construct neighbours matrix.
 
@@ -37,7 +32,7 @@ def createMatrix(m: int, n: int, type_: ElementT) -> MatrixT:
 
 	matrixWidth = mn // 2
 
-	matrix = [[type_() for _ in range(matrixWidth)] for __ in range(matrixWidth)]
+	matrix = [[ComplexMod.zero() for _ in range(matrixWidth)] for __ in range(matrixWidth)]
 
 	for y in range(n-1):
 		for x in range(m-1):
@@ -74,43 +69,7 @@ def createMatrix(m: int, n: int, type_: ElementT) -> MatrixT:
 	return matrix
 
 
-def det(matrix: MatrixT) -> ElementT:
-	n = len(matrix)
-	res = 1
-
-	for i in range(n):
-		# print(res, end="")
-
-		k = i
-		for j in range(i+1, n):
-			if matrix[j][i].abs2() > matrix[k][i].abs2():
-				k = j
-		if not matrix[k][i]:
-			res = 0
-			break
-
-		matrix[i], matrix[k] = matrix[k], matrix[i]
-		if i != k:
-			res = -res
-
-		# print(f" * {matrix[i][i]}")
-
-		res *= matrix[i][i]
-
-		for j in range(i+1, n):
-			matrix[i][j] /= matrix[i][i]
-
-		for j in range(n):
-			if j != i and matrix[j][i]:
-				for k in range(i+1, n):
-					matrix[j][k] -= matrix[i][k] * matrix[j][i]
-
-		# showMatrix(matrix)
-
-	return res
-
-
-def detEff(matrix: MatrixT) -> ElementT:
+def det(matrix: MatrixT) -> int:
 	# Prepare
 	n = len(matrix)
 
@@ -133,12 +92,13 @@ def detEff(matrix: MatrixT) -> ElementT:
 	for i in range(n):
 		diagEl = matrix[i][i]
 		if not diagEl:
+			# Fuck, it can be zero. We need to swap rows :(
 			raise RuntimeError(f"{i}'th diagonal element is zero")
 
 		if diagEl.r and diagEl.im:
 			raise RuntimeError(f"{i}'th diagonal element is not simple")
 
-		res = res * (abs(diagEl.r) if diagEl.r else abs(diagEl.im)) % diagEl.MOD
+		res = res * (abs(diagEl.r) if diagEl.r else abs(diagEl.im)) % diagEl.MOD()
 
 		# Process needed rows under `diagEl`
 		for rowI in range(i + 1, min(i + maxRowOffset + 1, n)):
@@ -147,26 +107,15 @@ def detEff(matrix: MatrixT) -> ElementT:
 				for colI in range(i, min(i + maxColOffset + 1, n)):
 					matrix[rowI][colI] -= matrix[i][colI] * mult
 
-		# showMatrix(matrix)
+		showMatrix(matrix)
 
 	return res
 
 
-def solve(m: int, n: int, type_: ElementT) -> ElementT:
-	try:
-		matrix = createMatrix(m, n, type_)
-	except ValueError:
-		return 0
-
-	showMatrix(matrix)
-
-	return det(matrix)
-
-
-def solveEff(m: int, n: int, type_: ElementT) -> ElementT:
+def solve(m: int, n: int) -> int:
 	t0_ = time()
 	try:
-		matrix = createMatrix(m, n, type_)
+		matrix = createMatrix(m, n)
 	except ValueError:
 		return 0
 	t1_ = time()
@@ -174,7 +123,7 @@ def solveEff(m: int, n: int, type_: ElementT) -> ElementT:
 	print()
 	showMatrix(matrix)
 
-	return detEff(matrix)
+	return det(matrix)
 
 
 if __name__ == "__main__":
@@ -199,8 +148,7 @@ if __name__ == "__main__":
 	# d(100, 100) = ... = 136442580
 
 	t0 = time()
-	# d = solve(M, N, ComplexMod)
-	d = solveEff(M, N, ComplexMod)
+	d = solve(M, N)
 	t1 = time()
 	print(f"d({M}, {N}) = {d}")
 	print(t1 - t0, "sec")
