@@ -110,6 +110,48 @@ def det(matrix: MatrixT) -> ElementT:
 	return res
 
 
+def detEff(matrix: MatrixT) -> ElementT:
+	# Prepare
+	n = len(matrix)
+
+	# Find i in first row
+	maxColOffset = 0
+	for colI in range(1, n):
+		if matrix[0][colI].im == 1:
+			maxColOffset = colI
+			break
+
+	# Find i in first col
+	maxRowOffset = 0
+	for rowI in range(1, n):
+		if matrix[rowI][0].im == 1:
+			maxRowOffset = rowI
+			break
+
+	res = 1
+	# For each column nullify all elements under diagonal
+	for i in range(n):
+		diagEl = matrix[i][i]
+		if not diagEl:
+			raise RuntimeError(f"{i}'th diagonal element is zero")
+
+		if diagEl.r and diagEl.im:
+			raise RuntimeError(f"{i}'th diagonal element is not simple")
+
+		res = res * (abs(diagEl.r) if diagEl.r else abs(diagEl.im)) % diagEl.MOD
+
+		# Process needed rows under `diagEl`
+		for rowI in range(i + 1, min(i + maxRowOffset + 1, n)):
+			if matrix[rowI][i]:
+				mult = matrix[rowI][i] / diagEl
+				for colI in range(i, min(i + maxColOffset + 1, n)):
+					matrix[rowI][colI] -= matrix[i][colI] * mult
+
+		# showMatrix(matrix)
+
+	return res
+
+
 def solve(m: int, n: int, type_: ElementT) -> ElementT:
 	try:
 		matrix = createMatrix(m, n, type_)
@@ -121,134 +163,45 @@ def solve(m: int, n: int, type_: ElementT) -> ElementT:
 	return det(matrix)
 
 
-def test(n, m, type_):
-	matrix = createMatrix(m, n, type_)
-	# matrix = [
-	# 	[1, 1j, 0, 0, 0, 0],
-	# 	[1j, 1, 1j, 0, 0, 0],
-	# 	[0, 1j, 1, 1j, 0, 0],
-	# 	[0, 0, 1j, 1, -1j, 0],
-	# 	[0, 0, 0, 1j, 1, 1j],
-	# 	[0, 0, 0, 0, 1j, 1],
-	# ]
-	# nn = 1000
-	# matrix = []
-	# for i in range(nn):
-	# 	matrix.append([(1 if (randint(0, nn-1) < 2 or j == i) else 0) for j in range(nn)])
-	# matrix = csc_matrix(matrix)
-
-	for col in matrix:
-		print(" ".join(str(i) for i in col))
+def solveEff(m: int, n: int, type_: ElementT) -> ElementT:
+	t0_ = time()
+	try:
+		matrix = createMatrix(m, n, type_)
+	except ValueError:
+		return 0
+	t1_ = time()
+	print(t1_ - t0_, "sec")
 	print()
+	showMatrix(matrix)
 
-	# lu = splu(matrix)
-	# diagL = lu.L.diagonal()
-	# diagU = lu.U.diagonal()
-	# det_ = diagL.prod()*diagU.prod()
-	# print(det_)
-
-	return det(matrix)
+	return detEff(matrix)
 
 
 if __name__ == "__main__":
-	"""
-	1  0  i  0  0  0  0  0  0  0  0  0  0  0  0
-	1  1  0  i  0  0  0  0  0  0  0  0  0  0  0
-	0  1  0  0  i  0  0  0  0  0  0  0  0  0  0
-	i  0  1  1  0  i  0  0  0  0  0  0  0  0  0
-	0  i  0  1  1  0  i  0  0  0  0  0  0  0  0
-	0  0  i  0  0  1  0  i  0  0  0  0  0  0  0
-	0  0  0  i  0  1  1  0  i  0  0  0  0  0  0
-	0  0  0  0  i  0  1  0  0  i  0  0  0  0  0
-	0  0  0  0  0  i  0  1  1  0  i  0  0  0  0
-	0  0  0  0  0  0  i  0  1  1  0  i  0  0  0
-	0  0  0  0  0  0  0  i  0  0  1  0  i  0  0
-	0  0  0  0  0  0  0  0  i  0  1  1  0  i  0
-	0  0  0  0  0  0  0  0  0  i  0  1  0  0  i
-	0  0  0  0  0  0  0  0  0  0  i  0  1  1  0
-	0  0  0  0  0  0  0  0  0  0  0  i  0  1  1
+	S = 100
+	M, N = 9, 6
 
-	1  0  i  0  0  0  0  0  0  0  0  0  0  0  0
-	0  1 -i  i  0  0  0  0  0  0  0  0  0  0  0
-	0  1  0  0  i  0  0  0  0  0  0  0  0  0  0
-	0  0  2  1  0  i  0  0  0  0  0  0  0  0  0
-	0  i  0  1  1  0  i  0  0  0  0  0  0  0  0
-	0  0  i  0  0  1  0  i  0  0  0  0  0  0  0
-	0  0  0  i  0  1  1  0  i  0  0  0  0  0  0
-	0  0  0  0  i  0  1  0  0  i  0  0  0  0  0
-	0  0  0  0  0  i  0  1  1  0  i  0  0  0  0
-	0  0  0  0  0  0  i  0  1  1  0  i  0  0  0
-	0  0  0  0  0  0  0  i  0  0  1  0  i  0  0
-	0  0  0  0  0  0  0  0  i  0  1  1  0  i  0
-	0  0  0  0  0  0  0  0  0  i  0  1  0  0  i
-	0  0  0  0  0  0  0  0  0  0  i  0  1  1  0
-	0  0  0  0  0  0  0  0  0  0  0  i  0  1  1
- 
-	1  0  i  0  0  0  0  0  0  0  0  0  0  0  0
-	0  1 -i  i  0  0  0  0  0  0  0  0  0  0  0
-	0  0  i -i  i  0  0  0  0  0  0  0  0  0  0
-	0  0  2  1  0  i  0  0  0  0  0  0  0  0  0
-	0  0 -1  1  1  0  i  0  0  0  0  0  0  0  0
-	0  0  i  0  0  1  0  i  0  0  0  0  0  0  0
-	0  0  0  i  0  1  1  0  i  0  0  0  0  0  0
-	0  0  0  0  i  0  1  0  0  i  0  0  0  0  0
-	0  0  0  0  0  i  0  1  1  0  i  0  0  0  0
-	0  0  0  0  0  0  i  0  1  1  0  i  0  0  0
-	0  0  0  0  0  0  0  i  0  0  1  0  i  0  0
-	0  0  0  0  0  0  0  0  i  0  1  1  0  i  0
-	0  0  0  0  0  0  0  0  0  i  0  1  0  0  i
-	0  0  0  0  0  0  0  0  0  0  i  0  1  1  0
-	0  0  0  0  0  0  0  0  0  0  0  i  0  1  1
- 
-	1  0  i  0  0  0  0  0  0  0  0  0  0  0  0
-	0  1 -i  i  0  0  0  0  0  0  0  0  0  0  0
-	0  0  i -i  i  0  0  0  0  0  0  0  0  0  0
-	0  0  0  3 -2  i  0  0  0  0  0  0  0  0  0
-	0  0  0  0  2  0  i  0  0  0  0  0  0  0  0
-	0  0  0  i -i  1  0  i  0  0  0  0  0  0  0
-	0  0  0  i  0  1  1  0  i  0  0  0  0  0  0
-	0  0  0  0  i  0  1  0  0  i  0  0  0  0  0
-	0  0  0  0  0  i  0  1  1  0  i  0  0  0  0
-	0  0  0  0  0  0  i  0  1  1  0  i  0  0  0
-	0  0  0  0  0  0  0  i  0  0  1  0  i  0  0
-	0  0  0  0  0  0  0  0  i  0  1  1  0  i  0
-	0  0  0  0  0  0  0  0  0  i  0  1  0  0  i
-	0  0  0  0  0  0  0  0  0  0  i  0  1  1  0
-	0  0  0  0  0  0  0  0  0  0  0  i  0  1  1
-
-	1  0  i  0  0  0  0  0  0  0  0  0  0  0  0
-	0  1 -i  i  0  0  0  0  0  0  0  0  0  0  0
-	0  0  i -i  i  0  0  0  0  0  0  0  0  0  0
-	0  0  0  3 -2  i  0  0  0  0  0  0  0  0  0
-	0  0  0  0  2  0  i  0  0  0  0  0  0  0  0
-	0  0  0  i -i  1  0  i  0  0  0  0  0  0  0
-	0  0  0  i  0  1  1  0  i  0  0  0  0  0  0
-	0  0  0  0  i  0  1  0  0  i  0  0  0  0  0
-	0  0  0  0  0  i  0  1  1  0  i  0  0  0  0
-	0  0  0  0  0  0  i  0  1  1  0  i  0  0  0
-	0  0  0  0  0  0  0  i  0  0  1  0  i  0  0
-	0  0  0  0  0  0  0  0  i  0  1  1  0  i  0
-	0  0  0  0  0  0  0  0  0  i  0  1  0  0  i
-	0  0  0  0  0  0  0  0  0  0  i  0  1  1  0
-	0  0  0  0  0  0  0  0  0  0  0  i  0  1  1
-
-	"""
-	S = 10
-	M, N = 5, 6
-
+	# d(1, 6) = i*1000000006 ??? 1
 	# d(2, 4) = 5
+	# d(3, 4) = 999999996 ??? 11
+	# d(3, 6) = i*41
+	# d(5, 4) = 999999912 ??? 95
+	# d(5, 6) = i*999998824 ??? 1183
 	# d(6, 6) = 6728
+	# d(7, 4) = 999999226 ??? 781
+	# d(7, 6) = i*31529
+	# d(9, 6) = i*999182016 ??? 817991
 	# d(10, 10) = 258584046368 = 584044562
 	# d(20, 20) = 1269984011256235834242602753102293934298576249856 = 752148172
 	# d(30, 30) = ... = 671246513
 	# d(40, 40) = ... = 768466191
+	# d(60, 60) = ... = 177942680
+	# d(100, 100) = ... = 136442580
 
 	t0 = time()
-	d = solve(M, N, ComplexMod)
+	# d = solve(M, N, ComplexMod)
+	d = solveEff(M, N, ComplexMod)
 	t1 = time()
-	print(d)
+	print(f"d({M}, {N}) = {d}")
 	print(t1 - t0, "sec")
 	print()
-
-	# test(M, N, type_=ComplexMod)
-

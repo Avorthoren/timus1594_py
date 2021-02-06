@@ -4,11 +4,15 @@ from typing import Union
 
 
 class ComplexMod:
-	MOD = 10**9 + 7  # MUST be prime
+	_MOD = 10 ** 9 + 7  # MUST be prime
+
+	@property
+	def MOD(self):
+		return self._MOD
 
 	def __init__(self, r: int = 0, im: int = 0):
-		self._r = r % self.MOD
-		self._im = im % self.MOD
+		self._r = r % self._MOD
+		self._im = im % self._MOD
 		self._inv = None
 
 	@property
@@ -84,7 +88,7 @@ class ComplexMod:
 
 	def _inverse(self) -> ComplexMod:
 		if self._inv is None:
-			self._inv = self.conjugate() * pow(self.abs2(), self.MOD - 2, self.MOD)
+			self._inv = self.conjugate() * pow(self.abs2(), self._MOD - 2, self._MOD)
 
 		return self._inv
 
@@ -118,10 +122,10 @@ class ComplexMod:
 
 	def __iadd__(self, other: Union[ComplexMod, int]) -> ComplexMod:
 		if isinstance(other, self.__class__):
-			self.r = (self.r + other.r) % self.MOD
-			self.im = (self.im + other.im) % self.MOD
+			self.r = (self.r + other.r) % self._MOD
+			self.im = (self.im + other.im) % self._MOD
 		else:
-			self.r = (self.r + other) % self.MOD
+			self.r = (self.r + other) % self._MOD
 
 		return self
 
@@ -142,10 +146,10 @@ class ComplexMod:
 
 	def __isub__(self, other: Union[ComplexMod, int]) -> ComplexMod:
 		if isinstance(other, self.__class__):
-			self.r = (self.r - other.r) % self.MOD
-			self.im = (self.im - other.im) % self.MOD
+			self.r = (self.r - other.r) % self._MOD
+			self.im = (self.im - other.im) % self._MOD
 		else:
-			self.r = (self.r - other) % self.MOD
+			self.r = (self.r - other) % self._MOD
 
 		return self
 
@@ -175,12 +179,12 @@ class ComplexMod:
 
 	def __imul__(self, other: Union[ComplexMod, int]) -> ComplexMod:
 		if isinstance(other, self.__class__):
-			r = (self.r * other.r - self.im * other.im) % self.MOD
-			im = (self.r * other.im + self.im * other.r) % self.MOD
+			r = (self.r * other.r - self.im * other.im) % self._MOD
+			im = (self.r * other.im + self.im * other.r) % self._MOD
 			self.r, self.im = r, im
 		else:
-			self.r = (self.r * other) % self.MOD
-			self.im = (self.im * other) % self.MOD
+			self.r = (self.r * other) % self._MOD
+			self.im = (self.im * other) % self._MOD
 
 		return self
 
@@ -191,13 +195,13 @@ class ComplexMod:
 		if isinstance(other, self.__class__):
 			return self * other._inverse()
 		else:
-			return self * pow(other, self.MOD - 2, self.MOD)
+			return self * pow(other, self._MOD - 2, self._MOD)
 
 	def __itruediv__(self, other: Union[ComplexMod, int]) -> ComplexMod:
 		if isinstance(other, self.__class__):
 			self.__imul__(other._inverse())
 		else:
-			self.__imul__(pow(other, self.MOD - 2, self.MOD))
+			self.__imul__(pow(other, self._MOD - 2, self._MOD))
 
 		return self
 
