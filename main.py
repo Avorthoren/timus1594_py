@@ -1,9 +1,9 @@
 from time import time
 from typing import Union, List
 
-from complex_modulo import factory
+import complex_modulo
 
-ComplexMod = factory(7)
+ComplexMod = complex_modulo.factory()
 MatrixT = List[List[ComplexMod]]
 
 
@@ -69,7 +69,7 @@ def createMatrix(m: int, n: int) -> MatrixT:
 	return matrix
 
 
-def det(matrix: MatrixT) -> int:
+def det(matrix: MatrixT, show: bool) -> int:
 	# Prepare
 	n = len(matrix)
 
@@ -107,49 +107,119 @@ def det(matrix: MatrixT) -> int:
 				for colI in range(i, min(i + maxColOffset + 1, n)):
 					matrix[rowI][colI] -= matrix[i][colI] * mult
 
-		showMatrix(matrix)
+		if show:
+			showMatrix(matrix)
 
 	return res
 
 
-def solve(m: int, n: int) -> int:
-	t0_ = time()
+def solve(m: int, n: int, show: bool = False) -> int:
 	try:
 		matrix = createMatrix(m, n)
 	except ValueError:
 		return 0
-	t1_ = time()
-	print(t1_ - t0_, "sec")
-	print()
-	showMatrix(matrix)
 
-	return det(matrix)
+	if show:
+		showMatrix(matrix)
+
+	return det(matrix, show)
 
 
 if __name__ == "__main__":
+	"""
+	d(1, 6) = i*1000000006 ??? 1
+	d(2, 4) = 5
+	d(3, 4) = 999999996 ??? 11
+	d(3, 6) = i*41
+	d(5, 4) = 999999912 ??? 95
+	d(5, 6) = i*999998824 ??? 1183
+	d(6, 6) = 6728
+	d(7, 4) = 999999226 ??? 781
+	d(7, 6) = i*31529
+	d(9, 6) = i*999182016 ??? 817991
+	d(10, 10) = 258584046368 = 584044562
+	d(20, 20) = 1269984011256235834242602753102293934298576249856 = 752148172
+	d(30, 30) = ... = 671246513
+	d(40, 40) = ... = 768466191
+	d(60, 60) = ... = 177942680
+	d(100, 100) = ... = 136442580
+
+	d(1, 2) = 1
+	d(1, 4) = 1
+	d(1, 6) = 1
+	d(1, 8) = 1
+	d(2, 1) = 1
+	d(2, 2) = 2
+	d(2, 3) = 3
+	d(2, 4) = 5
+	d(2, 5) = 8
+	d(2, 6) = 13
+	d(2, 7) = 21
+	d(2, 8) = 34
+	d(2, 9) = 55
+	d(3, 2) = 1000000004 ???
+	d(3, 4) = 11
+	d(3, 6) = 999999966 ???
+	d(3, 8) = 153
+	d(4, 1) = 1
+	d(4, 2) = 5
+	d(4, 3) = 11
+	d(4, 4) = 36
+	d(4, 5) = 95
+	d(4, 6) = 281
+	d(4, 7) = 781
+	d(4, 8) = 2245
+	d(4, 9) = 6336
+	d(5, 2) = 8
+	d(5, 4) = 95
+	d(5, 6) = 1183
+	d(5, 8) = 14824
+	d(6, 1) = 1
+	d(6, 2) = 13
+	d(6, 3) = 41
+	d(6, 4) = 281
+	d(6, 5) = 1183
+	d(6, 6) = 6728
+	d(6, 7) = 31529
+	d(6, 8) = 167089
+	d(6, 9) = 817991
+	d(7, 2) = 999999986 ???
+	d(7, 4) = 781
+	d(7, 6) = 999968478 ???
+	d(7, 8) = 1292697
+	d(8, 1) = 1
+	d(8, 2) = 34
+	d(8, 3) = 153
+	d(8, 4) = 2245
+	d(8, 5) = 14824
+	d(8, 6) = 167089
+	d(8, 7) = 1292697
+	d(8, 8) = 12988816
+	d(8, 9) = 108435745
+	d(9, 2) = 55
+	d(9, 4) = 6336
+	d(9, 6) = 817991
+	d(9, 8) = 108435745
+	"""
 	S = 100
 	M, N = 9, 6
 
-	# d(1, 6) = i*1000000006 ??? 1
-	# d(2, 4) = 5
-	# d(3, 4) = 999999996 ??? 11
-	# d(3, 6) = i*41
-	# d(5, 4) = 999999912 ??? 95
-	# d(5, 6) = i*999998824 ??? 1183
-	# d(6, 6) = 6728
-	# d(7, 4) = 999999226 ??? 781
-	# d(7, 6) = i*31529
-	# d(9, 6) = i*999182016 ??? 817991
-	# d(10, 10) = 258584046368 = 584044562
-	# d(20, 20) = 1269984011256235834242602753102293934298576249856 = 752148172
-	# d(30, 30) = ... = 671246513
-	# d(40, 40) = ... = 768466191
-	# d(60, 60) = ... = 177942680
-	# d(100, 100) = ... = 136442580
+	# t0 = time()
+	# d = solve(M, N, show=True)
+	# t1 = time()
+	# print(f"d({M}, {N}) = {d}")
+	# print(t1 - t0, "sec")
+	# print()
 
-	t0 = time()
-	d = solve(M, N)
-	t1 = time()
-	print(f"d({M}, {N}) = {d}")
-	print(t1 - t0, "sec")
-	print()
+	dMap = {}
+	for w in range(1, 10):
+		for h in range(
+			2 if w & 1 else 1,
+			10,
+			2 if w & 1 else 1
+		):
+			dMap[(w, h)] = solve(w, h)
+
+	for k, v in dMap.items():
+		print(f"d{k} = {v}")
+
