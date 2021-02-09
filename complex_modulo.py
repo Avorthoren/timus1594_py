@@ -158,16 +158,10 @@ class _ComplexMod:
 		return self
 
 	def __rsub__(self, other: Union[_ComplexMod, int]) -> _ComplexMod:
-		if isinstance(other, self.__class__):
-			return self.__class__(
-				other.r - self.r,
-				other.im - self.im
-			)
-		else:
-			return self.__class__(
-				other - self.r,
-				-self.im
-			)
+		return self.__class__(
+			other - self.r,
+			-self.im
+		)
 
 	def __mul__(self, other: Union[_ComplexMod, int]) -> _ComplexMod:
 		if isinstance(other, self.__class__):
@@ -221,19 +215,27 @@ def factory(mod: int = DEFAULT_MOD) -> type(_ComplexMod):
 
 
 def tests():
-	c = list()
-	c.append(_ComplexMod(13, -5))
-	c.append(_ComplexMod(-4, 31))
-	c.append(c[0] + c[1])
-	c.append(c[0] - c[1])
-	c.append(c[0] * c[1])
-	c.append(c[0] / c[1])
+	# c = list()
+	# c.append(_ComplexMod(13, -5))
+	# c.append(_ComplexMod(-4, 31))
+	# c.append(c[0] + c[1])
+	# c.append(c[0] - c[1])
+	# c.append(c[0] * c[1])
+	# c.append(c[0] / c[1])
+	#
+	# for ci in c:
+	# 	print(ci)
+	#
+	# c[0] += c[1]
+	# print(c[0])
 
-	for ci in c:
-		print(ci)
-
-	c[0] += c[1]
-	print(c[0])
+	# k = -11
+	# c = _ComplexMod(0, k)
+	# print(c.inverse)
+	# print(f"i*{DEFAULT_MOD - pow(k, DEFAULT_MOD-2, DEFAULT_MOD)}")
+	c = _ComplexMod(10, 8)
+	c /= 2
+	print(c)
 
 
 if __name__ == "__main__":
