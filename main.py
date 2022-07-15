@@ -257,7 +257,7 @@ def solveSparse(m: int, n: int, show: bool = False) -> int:
 
 if __name__ == "__main__":
 	S = 100
-	M, N = 4, 7
+	M, N = S, S
 
 	# t0 = time()
 	# d = solve(M, N, show=True)
